@@ -1,0 +1,5 @@
+{
+"key":"[your GDAX key]",
+"b64secret":"[your GDAX secret]",
+"passphrase":"[your GDAX passphrase]"
+}
