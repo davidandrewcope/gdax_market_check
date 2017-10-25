@@ -2,7 +2,7 @@
   "name": "gdax_market_check",
   "version": "1.0.0",
   "description": "Calculate total GDAX account value in USD ",
-  "repository": "git@github.com:davidandrewcope/gdax_market_check.git"
+  "repository": "git@github.com:davidandrewcope/gdax_market_check.git",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "^2.5.0",
-    "gdax": "^0.4.2",
+    "gdax": "github:coinbase/gdax-node",
     "lodash": "^4.17.4"
   }
 }

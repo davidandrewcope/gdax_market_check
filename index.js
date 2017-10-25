@@ -39,30 +39,71 @@ async.series([
 var authedClient = new Gdax.AuthenticatedClient(
   gdax.key, gdax.b64secret, gdax.passphrase, apiURI);
 
-var acct_value = 0;
+var gdax_acct_value = 0;
+var cb_acct_value = 0;
 
-authedClient.getAccounts(
-  function(err, response, data) {
-    if (err) {
-      console.log(err);
-      return;
-    }
+    async.series([function(callback) {
 
-    for (var i=0,ii=data.length;i<ii;i++) {
-      var curr_total = parseFloat(data[i].balance, 10);
-      //console.log("curr_total of " + data[i].currency + " is: " + curr_total);
-      var curr_usd_val = curr_total * price[data[i].currency];
+        authedClient.getAccounts(
+          function(err, response, data) {
+            if (err) {
+              return callback(err);
+            }
 
-      //console.log("curr_usd_val: "  + data[i].currency + " is: " + curr_usd_val);
-      acct_value = acct_value +  curr_usd_val;
-      //console.log("acct_value: " + acct_value);
-    }
+            for (var i=0,ii=data.length;i<ii;i++) {
+              var curr_total = parseFloat(data[i].balance, 10);
+              //console.log("curr_total of " + data[i].currency + " is: " + curr_total);
+              var curr_usd_val = curr_total * price[data[i].currency];
 
-    console.log("Total Value in USD is $" + acct_value);
-  }
-);
+              //console.log("curr_usd_val: "  + data[i].currency + " is: " + curr_usd_val);
+              gdax_acct_value = gdax_acct_value +  curr_usd_val;
+              //console.log("gdax_acct_value: " + gdax_acct_value);
+            }
+
+            console.log("Total GDAX Value in USD is:     $" + gdax_acct_value.toFixed(2));
+            callback(null, gdax_acct_value);
+          }
+        );
+
+      },
+      function(callback) {
+
+
+        authedClient.getCoinbaseAccounts(
+          function(err, response, data) {
+            if (err) {
+              return callback(err);
+            }
+
+            for (var i=0,ii=data.length;i<ii;i++) {
+              var curr_total = parseFloat(data[i].balance, 10);
+              //console.log("curr_total of " + data[i].currency + " is: " + curr_total);
+              var curr_usd_val = curr_total * price[data[i].currency];
+
+              //console.log("curr_usd_val: "  + data[i].currency + " is: " + curr_usd_val);
+              cb_acct_value = cb_acct_value +  curr_usd_val;
+              //console.log("cb_acct_value: " + cb_acct_value);
+            }
+
+            console.log("Total Coinbase Value in USD is: $" + cb_acct_value.toFixed(2));
+            callback(null, cb_acct_value);
+          }
+        );
+
+      }], function(err, results) {
+            if (err) {
+              console.log(err);
+              return;
+            }
+
+        var total = results[0] + results[1];
+        console.log("Total account value is:         $"+total.toFixed(2));
+
+    });
+
 
 });
+
 
 function getPrice(product, cb) {
   var id = product + '-USD';
