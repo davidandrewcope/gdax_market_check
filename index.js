@@ -27,13 +27,13 @@ async.series([
     console.log(err);
     return;
   }
-  console.log("Price against USD:");
+
   var price = {};
 
   for (var i=0,ii=prices.length;i<ii;i++){
     price[_.keys(prices[i])[0]] = _.values(prices[i])[0];
   }
-  console.log(price);
+  console.log("Price against USD:", price);
 
   // Defaults to https://api.gdax.com if apiURI omitted
 var authedClient = new Gdax.AuthenticatedClient(
@@ -41,6 +41,7 @@ var authedClient = new Gdax.AuthenticatedClient(
 
 var gdax_acct_value = 0;
 var cb_acct_value = 0;
+var other_acct_value = 0;
 
     async.series([function(callback) {
 
@@ -50,18 +51,7 @@ var cb_acct_value = 0;
               return callback(err);
             }
 
-            for (var i=0,ii=data.length;i<ii;i++) {
-              var curr_total = parseFloat(data[i].balance, 10);
-              //console.log("curr_total of " + data[i].currency + " is: " + curr_total);
-              var curr_usd_val = curr_total * price[data[i].currency];
-
-              //console.log("curr_usd_val: "  + data[i].currency + " is: " + curr_usd_val);
-              gdax_acct_value = gdax_acct_value +  curr_usd_val;
-              //console.log("gdax_acct_value: " + gdax_acct_value);
-            }
-
-            console.log("Total GDAX Value in USD is:     $" + gdax_acct_value.toFixed(2));
-            callback(null, gdax_acct_value);
+            return getUSDValue(price, data, callback);
           }
         );
 
@@ -75,34 +65,41 @@ var cb_acct_value = 0;
               return callback(err);
             }
 
-            for (var i=0,ii=data.length;i<ii;i++) {
-              var curr_total = parseFloat(data[i].balance, 10);
-              //console.log("curr_total of " + data[i].currency + " is: " + curr_total);
-              var curr_usd_val = curr_total * price[data[i].currency];
-
-              //console.log("curr_usd_val: "  + data[i].currency + " is: " + curr_usd_val);
-              cb_acct_value = cb_acct_value +  curr_usd_val;
-              //console.log("cb_acct_value: " + cb_acct_value);
-            }
-
-            console.log("Total Coinbase Value in USD is: $" + cb_acct_value.toFixed(2));
-            callback(null, cb_acct_value);
+            return getUSDValue(price, data, callback);
           }
         );
 
-      }], function(err, results) {
+      },
+      function(callback) {
+        return getUSDValue(price, gdax.other, callback);
+      }
+
+      ], function(err, results) {
             if (err) {
               console.log(err);
               return;
             }
 
-        var total = results[0] + results[1];
-        console.log("Total account value is:         $"+total.toFixed(2));
-
+        var total = results[0] + results[1] + results[2];
+        console.log("Total GDAX Value in USD is:            $" + results[0].toFixed(2));
+        console.log("Total Coinbase Value in USD is:        $" + results[1].toFixed(2));
+        console.log("Total Other Account Value in USD is:   $" + results[2].toFixed(2));
+        console.log("Total account value is:                $"+total.toFixed(2));
     });
 
 
 });
+
+function getUSDValue(price, data, callback) {
+    var usd_value = 0;
+    for (var i=0,ii=data.length;i<ii;i++) {
+      var curr_total = parseFloat(data[i].balance, 10);
+      var curr_usd_val = curr_total * price[data[i].currency];
+
+      usd_value = usd_value +  curr_usd_val;
+    }
+    return callback(null, usd_value);
+}
 
 
 function getPrice(product, cb) {
