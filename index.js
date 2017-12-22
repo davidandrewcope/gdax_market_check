@@ -13,6 +13,9 @@ async.series([
     getPrice('BTC', callback);
   },
   function(callback) {
+    getPrice('BCH', callback);
+  },
+  function(callback) {
     getPrice('ETH', callback);
   },
   function(callback) {
